@@ -15,7 +15,7 @@ where -arch=sm_x0 should give the appropriate architecture of the used gpu.
 
 The main loop creates a new cell object with the parameters described in Constants.cuh, allocates all of the memory and initializes the simulation. Then, the explicit midpoint rule is performed until certain thresholds in simulation time are passed, when the fields are saved as outputs to enable visualizing and analyzing them. 
 
-The step size in each step gets determined by an adaptive step size control that compares the largest deviation in the actin density, which contains the largest and most volatile values, with a pre-defined error threshold of 10e-5 to 10e-8 depending on the parameters. If the threshold is met, the step is saved and the step size increased by 1%, otherwise, the step is repeated with half the step size.
+The step size in each step gets determined by an adaptive step size control that performs two steps with half the size. Then, it compares the largest deviation in the resulting actin density, which contains the largest and most volatile values (order 10e3), with the result obtained with a single full step. If a pre-defined error threshold of 10e-8 is met, the step is saved and the step size increased by 1%. Otherwise, the step is repeated with half the step size.
 
 Once the simulation has finished, the final values for the densities are saved and the memory is freed.
 
