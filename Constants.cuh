@@ -9,8 +9,8 @@
 
 #define PHASEFIELDFLAG 0	//turns phasefield on (1) or off (0)
 //!!!!!!!! ONLY MAX 7 CELLS ALLOWED IF CHOOSING OBSTACLEFLAG 4 !!!!!!!!
-#define ZZDD "VarNoPhasPD4_RasterB-6-5"
-#define OBSTACLETYPE (PHASEFIELDFLAG ? 0 : 0)		//0 = none, 1 = circle, 2 = square, 3 = "star", 4 = hexagonal maze, 5 = channel, 6 = Wells. Always 0 without a phasefield.
+#define ZZDD "TOKEN"
+#define OBSTACLETYPE (PHASEFIELDFLAG ? 0 : 0)		//... : 0 = none, 1 = circle, 2 = square, 3 = "star", 4 = hexagonal maze, 5 = channel, 6 = Wells. Always 0 without a phasefield.
 #define STEPSIZEFLAG 1		//0 = standard euler step, 1 = step size controled mid point rule
 #define ZOOMFACTOR 1.0		//magnifies systems with a solid border, such as circle and square. Unphysical behaviour for star and hexagonal obstacles.
 #define CELLCOUNT 1		//Number of Cells.
@@ -20,9 +20,9 @@
 
 #define NUCLEATORDEGRADFLAG 0	//turns on external degredation of nucleating proteins (1 = on), with a balancing part.
 #define MEMBTENSFLAG 0		//turns on membrane tension / curvature terms (1 = on)
-#define MEMBGRADIENTNORMALIZER 0 //normalizes phasefield gradient vectors, so that actin-membrane interaction doesn't scale with the sharpness of the interface
+#define MEMBGRADIENTNORMALIZER 0 //normalizes phasefield gradient vectors
 #define STATELOADERFLAG 0 	 //0 = generate random initial condition, 1 = load initial values from file in State folder
-#define OBSDYNFLAG 0		 //0 = default, 1= protein dynamics also scale with obstacle phase field
+#define OBSDYNFLAG 0		 //0 = default, 1 = protein dynamics also scale with obstacle phase field
 
 #define GITTERPUNKTZAHLX 256
 #define GITTERPUNKTZAHLY 256
@@ -71,12 +71,12 @@
 
 #define InfluxStrength 0.0
 
-#define Fehlerschwelle 1e-6	//Genauigkeit der Schrittweitensteuerung, der maximale Fehler (nicht RMS) aller Gitterpunkte darf nicht größer sein als dieser Schwellwert
+#define Fehlerschwelle 1e-8	//Threshold of the adaptive step size control. Maximum value allowed for the largest deviation in the actin concentration.
 #define FFDD "G8"
 
-#define GPUID 0			//GPUs werden automatisch entweder mit 0 oder 1 (bei 2 Karten im Rechner) nummeriert; dient der Zuweisung der richtigen GPU
+#define GPUID 0			//GPUs automatically receive an ID of 0 in most cases. If multiple GPUs are used and not managed by another piece of software, this needs to be changed
 
-/* Bei einer FFT reell->komplex entstehen nur n/2 + 1  (komplexe!) Koeffizienten, wenn man zuvor n Werte eingegeben hat, also (n + 2) Werte (Real + Imaginärteil) */
+/* a real-to-complex FFT just creates n/2 + 1 complex coefficients, or (n + 2) values (real and imaginary parts)*/
 #define KOEFFZAHL_IM_FREQUENZRAUM ((GITTERPUNKTZAHLX/2+1)*GITTERPUNKTZAHLY)
 
 #define CONST_xSchrittweite (VAR_SysL / (double) GPZX)
