@@ -67,7 +67,6 @@
 #define CONST_Unit_Area ((VAR_SysL * VAR_SysL)/((double)GPZX * GPZY))
 #define VAR_MeanVol (PHASEFIELDFLAG ? (PI * Startradius * Startradius) : (GPZX * GPZY))	
 #define VAR_MeanCirc (2 * PI * Startradius * VAR_SysL / GPZX)
-//#define VAR_beta (VAR_beta1 * 0.45 / VAR_va)
 
 #define InfluxStrength 0.0
 
