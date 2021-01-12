@@ -4,9 +4,6 @@
 
 #define PI 3.141592653589793
 
-#define GPU_Iterationen 3000
-#define Anzahl_der_Ausgabewerte 200
-
 #define PHASEFIELDFLAG 0	//turns phasefield on (1) or off (0)
 #define ZZDD "TOKEN"
 #define STEPSIZEFLAG 1		//0 = standard euler step, 1 = step size controled mid point rule
