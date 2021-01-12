@@ -8,10 +8,9 @@
 #define Anzahl_der_Ausgabewerte 200
 
 #define PHASEFIELDFLAG 0	//turns phasefield on (1) or off (0)
-//!!!!!!!! ONLY MAX 7 CELLS ALLOWED IF CHOOSING OBSTACLEFLAG 4 !!!!!!!!
 #define ZZDD "TOKEN"
 #define STEPSIZEFLAG 1		//0 = standard euler step, 1 = step size controled mid point rule
-#define ZOOMFACTOR 1.0		//magnifies systems with a solid border, such as circle and square. Unphysical behaviour for star and hexagonal obstacles.
+#define ZOOMFACTOR 1.0		//Magnifies the system. In this version, it's identical to changing both the system length and the cell area and radius.
 
 #define NUCLEATORDEGRADFLAG 0	//turns on external degredation of nucleating proteins (1 = on), with a balancing part.
 #define MEMBGRADIENTNORMALIZER 0 //normalizes phasefield gradient vectors
@@ -23,24 +22,24 @@
 #define GPZY 256
 #define RASTERGROESSE (GITTERPUNKTZAHLX*GITTERPUNKTZAHLY)
 
-#define Startradius (PHASEFIELDFLAG ? 45.0 * ZOOMFACTOR : 512.0)
+#define Startradius (PHASEFIELDFLAG ? 32.0 * ZOOMFACTOR : 512.0)
 
 //SettingStart
-#define EndZeit 40.0
+#define EndZeit 150.0
 #define ZEITINTERVALL 0.05	
-#define BILDINTERVALL 5
+#define BILDINTERVALL 10
 #define ZEITOFFSET 0.0		//needs to be smaller than EndZeit. Nothing is saved before the simulation passes this time.
 //SettingEnd
 
 
 //ParamStart
 #define VAR_DiAkt 0.0 //(changes have no effect)
-#define VAR_DiNa 0.120
-#define VAR_DiPh 0.014
+#define VAR_DiNa 0.04
+#define VAR_DiPh 0.005
 
-#define VAR_va 15.0
+#define VAR_va 0.46
 #define VAR_wd 0.43
-#define VAR_w0 0.015
+#define VAR_w0 0.006
 #define VAR_kd 175.0
 
 #define VAR_alpha 588.0
@@ -48,7 +47,7 @@
 #define VAR_kappa 118.0
 #define VAR_epsilon 8.0
 
-#define VAR_SysLen 1.0
+#define VAR_SysLen 1.3
 #define VAR_CNuk 700.0	
 //ParamEnd
 
