@@ -12,7 +12,7 @@ where -arch=sm_x0 should give the appropriate architecture of the used gpu.
 * FourierHelpers.cu /-.cuh contain a set of complex coefficients for transforming the quantities of a single cell into fourier space with an FFT. Using only one for all cells saves space.
 * Constants.cuh contains all of the parameters in the form of macros, again to save time when calling parameters on the GPU. They can be implemented on the level of cells in order to modify them during runtime, but this will make the computation again more costly as memory accesses are the most expensive operations on the GPU.
 
-The main loop creates a new cell object with the parameters described in Constants.cuh, allocates all of the memory and initializes the simulation. Then, the explicit midpoint rule is performed until certain thresholds in simulation time are passed, when the fields are saved as outputs to enable visualizing and analyzing them. 
+The main loop creates a new cell object with the parameters described in Constants.cuh, allocates all of the memory and initializes the simulation. Then, the explicit midpoint rule is performed until certain thresholds in simulation time are passed. There, the fields are saved as outputs to enable visualizing and analyzing them. 
 
 The step size in each step gets determined by an adaptive step size control that performs two steps with half the size. Then, it compares the largest deviation in the resulting actin density, which contains the largest and most volatile values (order 10e3), with the result obtained with a single full step. If a pre-defined error threshold of 10e-8 is met, the step is saved and the step size increased by 1%. Otherwise, the step is repeated with half the step size.
 
