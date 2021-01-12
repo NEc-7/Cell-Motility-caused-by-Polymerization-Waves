@@ -1,13 +1,12 @@
 #include "./Cells.cuh"
 #include "./Constants.cuh"
 #include "./FourierHelper.cuh" //NEEDS CONSTANTS
-#include "./Obstacle.cuh" //NEEDS CONSTANTS AND FOURIERHELPER
-#include "./Dynamics.cuh" //NEEDS CONSTANTS, FOURIERHELPER AND OBSTACLE
+#include "./Dynamics.cuh" //NEEDS CONSTANTS, FOURIERHELPER
 
 #define LOADERPREFIX "Lin"
 #define LOADERSUFFIX "I-1-4"
 
-int SingleCell::Initializer(double startx, double starty, double* Obstacle, int TrajNum){
+int SingleCell::Initializer(double startx, double starty, int TrajNum){
 	int i,j,k;
 	double Summe = 0;
 	char buffer[128];
@@ -63,20 +62,20 @@ int SingleCell::Initializer(double startx, double starty, double* Obstacle, int 
 				Radius = sqrt( (i-startx)*(i-startx) + (j-starty)*(j-starty) );
 				//Erzeugt Kreis mit Mittelpunkt (150,150) und Fläche 75*75 (vgl. get_Area, Grundvolumen)
 				if( Radius <= 0.75*Startradius ){
-		     		   	Phas[i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 1;
-					Fila[i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (1 + 0.2 * (drand48() - 0.5));
-					NukA[i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * VAR_CNuk *  (1 + 0.2 * (drand48() - 0.5));
-					NukI[i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 1.0 *  (1 + 0.2 * (drand48() - 0.5));
-					PolX[i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (drand48() - 0.5); 
-					PolY[i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (drand48() - 0.5);
+		     		   	Phas[i * GPZX + j] = 1;
+					Fila[i * GPZX + j] = 0.5 * (1 + 0.2 * (drand48() - 0.5));
+					NukA[i * GPZX + j] = VAR_CNuk *  (1 + 0.2 * (drand48() - 0.5));
+					NukI[i * GPZX + j] = 1.0 *  (1 + 0.2 * (drand48() - 0.5));
+					PolX[i * GPZX + j] = 0.5 * (drand48() - 0.5); 
+					PolY[i * GPZX + j] = 0.5 * (drand48() - 0.5);
 					Summe	     += NukA[i * GPZX + j] + NukI[i * GPZX + j];
 				}else if( Radius <= (1.3*Startradius) ){
-					Phas   [i * GPZX + j] = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (1 - tanh(25.0 * VAR_SysL / GPZX * (Radius - Startradius)));//20.0 * (1.15 - Radius / Startradius) / 3.0;
-					Fila[i * GPZX + j]    = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (1 + 0.2 * (drand48() - 0.5))       * Phas[i * GPZX + j];
-					NukA[i * GPZX + j]    = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * VAR_CNuk *  (1 + 0.2 * (drand48() - 0.5)) * Phas[i * GPZX + j];
-					NukI[i * GPZX + j]    = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 1.0 *  (1 + 0.2 * (drand48() - 0.5))      * Phas[i * GPZX + j];
-					PolX[i * GPZX + j]    = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (drand48() - 0.5)                   * Phas[i * GPZX + j];
-					PolY[i * GPZX + j]    = Obstacle[i * GPZX + j] * Obstacle[i * GPZX + j] * 0.5 * (drand48() - 0.5)		    * Phas[i * GPZX + j];
+					Phas   [i * GPZX + j] = 0.5 * (1 - tanh(25.0 * VAR_SysL / GPZX * (Radius - Startradius)));//20.0 * (1.15 - Radius / Startradius) / 3.0;
+					Fila[i * GPZX + j]    = 0.5 * (1 + 0.2 * (drand48() - 0.5))       * Phas[i * GPZX + j];
+					NukA[i * GPZX + j]    = VAR_CNuk *  (1 + 0.2 * (drand48() - 0.5)) * Phas[i * GPZX + j];
+					NukI[i * GPZX + j]    = 1.0 *  (1 + 0.2 * (drand48() - 0.5))      * Phas[i * GPZX + j];
+					PolX[i * GPZX + j]    = 0.5 * (drand48() - 0.5)                   * Phas[i * GPZX + j];
+					PolY[i * GPZX + j]    = 0.5 * (drand48() - 0.5)		    * Phas[i * GPZX + j];
 					Summe	     += NukA[i * GPZX + j] + NukI[i * GPZX + j];
 				}else{
 					Phas[i * GPZX + j] = 0;
@@ -232,11 +231,6 @@ void SingleCell::TotalValues(cublasHandle_t ToDevice, int Offset){
 	  	cublasDasum(ToDevice, RASTERGROESSE, GPU_NukA + Offset * RASTERGROESSE, 1, GPU_Area + 1);
 	   	cublasDasum(ToDevice, RASTERGROESSE, GPU_NukI + Offset * RASTERGROESSE, 1, GPU_Area + 2);
 	#endif
-
-	#if MEMBTENSFLAG > 0
-   		cublasDasum(ToDevice, RASTERGROESSE, GPU_PhasGrdAbs, 			1, GPU_Area + 3);
-   		//cublasDasum(ToDevice, RASTERGROESSE, GPU_PhasGrdAbsC, 			1, GPU_Area + 4);
-	#endif
 }
 
 void SingleCell::SpectralDerivatives(FourierHelpers *FH, int Offset){
@@ -244,58 +238,8 @@ void SingleCell::SpectralDerivatives(FourierHelpers *FH, int Offset){
 			       FH->GPU_Koeff_Fila, FH->GPU_Koeff_Fila2, FH->GPU_Koeff_Fila3, FH->GPU_Koeff_NukAkt, FH->GPU_Koeff_NukInakt, FH->GPU_Koeff_PolaX, FH->GPU_Koeff_PolaX2, FH->GPU_Koeff_PolaY, FH->GPU_Koeff_Phase, FH->GPU_Koeff_Phase2, FH->GPU_Koeff_Phase3,
 			       GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff,
 			       FH->FFTplanReellzuKomplex, FH->FFTplanKomplexzuReell);
-	#if MEMBTENSFLAG > 0
-		VectorAbsolute<<<GPZX, GPZY>>>(GPU_PhasGrdX, GPU_PhasGrdY, GPU_PhasGrdAbs, GPU_PhasGrdAbsC);
-		Curvature<<<GPZX, GPZY>>>(GPU_PhasGrdX, GPU_PhasGrdY, GPU_Phas + Offset * RASTERGROESSE, GPU_Curv);
-	#endif
 }
 
-__global__ void VectorAbsolute(double *X, double *Y, double *Abs, double *Count){
-	int ID = threadIdx.x + blockIdx.x * blockDim.x;
-	double XLoc = X[ID], YLoc = Y[ID];
-	double Helper1 = sqrt(XLoc * XLoc + YLoc * YLoc);//, Helper2 = 1.0;
-
-	/*if(Helper1 < 1e-6){
-		Helper1 = 0.0;
-		Helper2 = 0.0;
-	}*/
-	Abs[ID]   = Helper1;
-	//Count[ID] = Helper2;
-};
-
-__global__ void Curvature(double *GrdX, double *GrdY, double *Phas, double *Curv){
-	int IDX = threadIdx.x, IDY = blockIdx.x;
-	int ID = threadIdx.x + blockIdx.x * blockDim.x;
-	double PLoc = Phas[ID];
-	double Helper;
-
-	if((0.05<PLoc)&&(PLoc<0.95)){
-		double XLocxM1 = GrdX[((IDX - 1 + GPZX) & (GPZX - 1)) + IDY * blockDim.x], YLocxM1 = GrdY[((IDX - 1 + GPZX) & (GPZX - 1)) + IDY * blockDim.x];
-		double AbsxM = sqrt(XLocxM1 * XLocxM1 + YLocxM1 * YLocxM1);
-		double XLocxP1 = GrdX[((IDX + 1) & (GPZX - 1)) + IDY * blockDim.x], YLocxP1 = GrdY[((IDX + 1) & (GPZX - 1)) + IDY * blockDim.x];
-		double AbsxP = sqrt(XLocxP1 * XLocxP1 + YLocxP1 * YLocxP1);
-
-		double XLocyM1 = GrdX[IDX + ((IDY - 1 + GPZY) & (GPZY - 1)) * blockDim.x], YLocyM1 = GrdY[IDX + ((IDY - 1 + GPZY) & (GPZY - 1)) * blockDim.x];
-		double AbsyM = sqrt(XLocyM1 * XLocyM1 + YLocyM1 * YLocyM1);
-		double XLocyP1 = GrdX[IDX + ((IDY + 1) & (GPZY - 1)) * blockDim.x], YLocyP1 = GrdY[IDX + ((IDY + 1) & (GPZY - 1)) * blockDim.x];
-		double AbsyP = sqrt(XLocyP1 * XLocyP1 + YLocyP1 * YLocyP1);
-		double Sumy = (YLocyP1 / (1e-3 + AbsyP)) - (YLocyM1 / (1e-3 + AbsyM)); 
-		double Sumx = (XLocxP1 / (1e-3 + AbsxP)) - (XLocxM1 / (1e-3 + AbsxM));
-
-		//if((abs(Sumx + Sumy) < 0.4)){
-			Helper = (Sumx + Sumy) / (2 * CONST_xSchrittweite);
-		/*}else{
-			Helper = 0.0;
-		}
-		if(abs(Helper) > 10.0){
-			printf("%f\t%d\t%d\n%f\t%f\t%f\t%f\n%f\t%f\t%f\t%f\n%f\n",Helper,IDX,IDY,XLocxP1,XLocxM1,YLocyP1,YLocyM1,XLocxP1 / (1e-3 + AbsxP),XLocxM1 / (1e-3 + AbsxM),YLocyP1 / (1e-3 + AbsyP),YLocyM1 / (1e-3 + AbsyM),PLoc);
-		}*/
-		
-	}else{
-		Helper = 0.0;
-	}
-		Curv[ID] = - Helper;
-};
 
 void SingleCell::FilaToHost(void){
 	cudaMemcpy(Fila, GPU_Fila,       ByteZahl_Konzentrationen_double, cudaMemcpyDeviceToHost);
@@ -331,7 +275,7 @@ void SingleCell::StepFilaUpdate(void){
 	CopyKernel<<<GPZX,GPZY,0>>>(GPU_Fila + (RASTERGROESSE * 3), GPU_Fila + (RASTERGROESSE << 1));
 }
 
-//denkbar einfach, aber schneller als die cudaMemcpy
+//simple but faster than memcpy
 __global__ void CopyKernel(double *In, double *Out){
 	int ID = threadIdx.x + blockIdx.x * blockDim.x;
 	Out[ID] = In[ID];
@@ -362,7 +306,7 @@ double SingleCell::FindMaxLastDeviation(cublasHandle_t ToHost){
 }
 
 
-//einfacher und schneller als der analoge Vektorsubtraktionsbefehl der cublas-Bibliothek
+//simple but faster than the more general cublas counterpart
 __global__ void Vektorsubtraktion(double *Minuend, double *Subtrahend, double *Ziel){
 	int ID = threadIdx.x + GPZX * blockIdx.x;
      Ziel[ID] = abs(Minuend[ID] - Subtrahend[ID]);
@@ -373,16 +317,16 @@ void SingleCell::SaveCenterOfMass(int TimePoint, double Time){
 				   double Summe = 0, CenterCon[1];
 				   SchwerpunktX[TimePoint+1]=0;
 				   SchwerpunktY[TimePoint+1]=0;
-				   //Die Flags zeigen an, ob die Zelle (=das PhasenfeldA) in x- und/oder y-Richtung den periodischen Rand überschreitet. 0 = nein
+				   //flags tell if the cell crosses the periodic boundary on the x- and/or y-axis. 0 = no
 				   int FlagX = 0, FlagY = 0, j, k;
 
-				   //Flags bestimmen
+				   //determine flags
 				   for(j=0;j<GPZX;j++){
 				       if((Phas[j * GPZX] > 1e-5) && (Phas[(j + 1) * GPZX - 1]    > 1e-5)){FlagX = 1;}
 				       if((Phas[j]        > 1e-5) && (Phas[(GPZY - 1) * GPZX + j] > 1e-5)){FlagY = 1;}
 				   }
 
-				   //Anhand der Flags den Schwerpunkt aufsummieren
+				   //calculate center of mass depending on the flags
 				       for(k=0;k<GPZX;k++){
 					       	for(j=0;j<GPZY;j++){
 							Summe += Phas[j * GPZX + k];
@@ -410,7 +354,7 @@ void SingleCell::SaveCenterOfMass(int TimePoint, double Time){
 
 
 
-				   //Skalierung anpassen und bei Überschreitung des periodischen Randes den Ursprungsstartwert SP[0] entsprechend anpassen
+				   //normalize and update position accordingly if the cell migrated over the periodic boundary
 				       SchwerpunktX[TimePoint+1] *= CONST_xSchrittweite / Summe;
 				       SchwerpunktY[TimePoint+1] *= CONST_xSchrittweite / Summe;
 				   if(SchwerpunktX[TimePoint+1] > VAR_SysL){SchwerpunktX[TimePoint+1] -= VAR_SysL;}
@@ -436,6 +380,7 @@ void SingleCell::SaveCenterOfMass(int TimePoint, double Time){
 		           	   fflush(CenterActin);
 }
 
+//currently not used, occasional check for cell "division". Not to be used in every time step.
 int SingleCell::ZellteilungsCheck(int TimePoint){
 		int XsPos = (int)round(SchwerpunktX[TimePoint+1]/VAR_SysL * GPZX) & (GPZX - 1), YsPos = (int)round(SchwerpunktY[TimePoint+1]/VAR_SysL * GPZY) & (GPZY - 1);
 		int XsMin,XsMax,YsMin,YsMax, j,k;
@@ -585,28 +530,16 @@ void SingleCell::EulerStep(int SourceOffset, int RelativeTarget, double StepSize
 			       GPU_PolX + SourceOffset * RASTERGROESSE, GPU_PolY + SourceOffset * RASTERGROESSE, GPU_Phas + SourceOffset * RASTERGROESSE);
 }
 
-void SingleCell::TimeDerivativeIAH(int SourceOffset, int RelativeTarget, Obstacles *Obs, double *GPU_DegradHelper, double *GPU_DeltHelper){
-	ZeitDiffIAH<<<GPZX,GPZY,0>>>(SourceOffset * RASTERGROESSE, RelativeTarget, GPU_Fila, GPU_NukA, GPU_NukI, 
-			          GPU_PolX, GPU_PolY, GPU_Phas, Obs->GPU_Obstacle, GPU_Area,
-				  GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff, GPU_Curv, Obs->GPU_ObsDiff, GPU_DegradHelper, GPU_DeltHelper);
-}
-
-void SingleCell::TimeDerivativeStepIAH(int SourceOffset, int RelativeTarget, int RelativeOrigin, double StepSize, Obstacles *Obs, double *GPU_DegradHelper, double *GPU_DeltHelper){
-	ZeitDiffMitEulerIAH<<<GPZX,GPZY,0>>>(SourceOffset * RASTERGROESSE, RelativeTarget, RelativeOrigin, GPU_Fila, GPU_NukA, GPU_NukI, 
-			          	  GPU_PolX, GPU_PolY, GPU_Phas, Obs->GPU_Obstacle, GPU_Area,
-				  	  GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff, GPU_Curv, Obs->GPU_ObsDiff, GPU_DegradHelper, GPU_DeltHelper, StepSize);
-}
-
-void SingleCell::TimeDerivative(int SourceOffset, int RelativeTarget, Obstacles *Obs, SingleCell *GPU_Cells, int CellNum){
+void SingleCell::TimeDerivative(int SourceOffset, int RelativeTarget, SingleCell *GPU_Cells, int CellNum){
 	ZeitDiff<<<GPZX,GPZY,0>>>(SourceOffset * RASTERGROESSE, RelativeTarget, GPU_Fila, GPU_NukA, GPU_NukI, 
-			          GPU_PolX, GPU_PolY, GPU_Phas, Obs->GPU_Obstacle, GPU_Area,
-				  GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff, GPU_Curv, Obs->GPU_ObsDiff, GPU_Cells, CellNum);
+			          GPU_PolX, GPU_PolY, GPU_Phas, GPU_Area,
+				  GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff, GPU_Curv, GPU_Cells, CellNum);
 }
 
-void SingleCell::TimeDerivativeStep(int SourceOffset, int RelativeTarget, int RelativeOrigin, double StepSize, Obstacles *Obs, SingleCell *GPU_Cells, int CellNum){
+void SingleCell::TimeDerivativeStep(int SourceOffset, int RelativeTarget, int RelativeOrigin, double StepSize, SingleCell *GPU_Cells, int CellNum){
 	ZeitDiffMitEuler<<<GPZX,GPZY,0>>>(SourceOffset * RASTERGROESSE, RelativeTarget, RelativeOrigin, GPU_Fila, GPU_NukA, GPU_NukI, 
-			          	  GPU_PolX, GPU_PolY, GPU_Phas, Obs->GPU_Obstacle, GPU_Area,
-				  	  GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff, GPU_Curv, Obs->GPU_ObsDiff, GPU_Cells, CellNum, StepSize);
+			          	  GPU_PolX, GPU_PolY, GPU_Phas, GPU_Area,
+				  	  GPU_FilaGrdX, GPU_FilaGrdY, GPU_PolaDivg, GPU_PhasGrdX, GPU_PhasGrdY, GPU_FilaDiff, GPU_NukADiff, GPU_NukIDiff, GPU_PolXDiff, GPU_PolYDiff, GPU_PhasDiff, GPU_Curv, GPU_Cells, CellNum, StepSize);
 }
 
 

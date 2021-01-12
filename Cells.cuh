@@ -10,7 +10,6 @@
 #include <unistd.h>
 #include <math.h>
 
-class Obstacles;
 class FourierHelpers;
 
 //SingleCell is a Host class. Never define a SingleCell variable on the GPU!
@@ -32,7 +31,7 @@ class SingleCell
 	//Functions
 	SingleCell();											//Constructor, does nothing!! Initializer allocates GPU&Host memory!!
 	~SingleCell();											//Destructor, does nothing!! So GPU stuff can be defined
-	__host__ int Initializer(double startx, double starty, double *Obstacle, int TrajNum); 	//Allocates GPU&Host memory & Creates a cell with slightly randomized starting values and a radius of StartRadius (constants.cuh) at (startx, starty)
+	__host__ int Initializer(double startx, double starty, int TrajNum); 	//Allocates GPU&Host memory & Creates a cell with slightly randomized starting values and a radius of StartRadius (constants.cuh) at (startx, starty)
 	__host__ void FreeMemory(); 									//Frees GPU&Host memory 
 	__host__ void FilaToHost();									//Copies data from GPU to Host
 	__host__ void PhasToHost();									// "
@@ -42,10 +41,8 @@ class SingleCell
 	__host__ int  ZellteilungsCheck(int TimePoint);							//NEEDS SAVECENTEROFMASS FIRST! Checks if the cell has divided (rudimentary)
 
 	__host__ void EulerStep(int SourceOffset, int RelativeTarget, double StepSize);
-	__host__ void TimeDerivativeIAH(int SourceOffset, int RelativeTarget, Obstacles *Obs, double *GPU_DegradHelper, double *GPU_DeltHelper);
-	__host__ void TimeDerivativeStepIAH(int SourceOffset, int RelativeTarget, int RelativeOrigin, double StepSize, Obstacles *Obs, double *GPU_DegradHelper, double *GPU_DeltHelper);
-	__host__ void TimeDerivative(int SourceOffset, int RelativeTarget, Obstacles *Obs, SingleCell *GPU_Cells, int CellNum);
-	__host__ void TimeDerivativeStep(int SourceOffset, int RelativeTarget, int RelativeOrigin, double StepSize, Obstacles *Obs, SingleCell *GPU_Cells, int CellNum);
+	__host__ void TimeDerivative(int SourceOffset, int RelativeTarget, SingleCell *GPU_Cells, int CellNum);
+	__host__ void TimeDerivativeStep(int SourceOffset, int RelativeTarget, int RelativeOrigin, double StepSize, SingleCell *GPU_Cells, int CellNum);
 	__host__ void TotalValues(cublasHandle_t ToDevice, int Offset);					//Calculates the total value of Phasefield, NukA and NukI
 	__host__ void SpectralDerivatives(FourierHelpers *FH, int Offset);				//Calculates all needed derivatives
 	__host__ double NumericStepError(cublasHandle_t ToHost, double *GPU_Array);			//Calculates the relative error made during the step size control step
@@ -62,8 +59,6 @@ class SingleCell
 };
 
 __global__ void CopyKernel(double *In, double *Out);
-__global__ void VectorAbsolute(double *X, double *Y, double *Abs, double *Count);
 __global__ void Vektorsubtraktion(double *Minuend, double *Subtrahend, double *Ziel);
-__global__ void Curvature(double *GrdX, double *GrdY, double *Phas, double *Curv);
 
 #endif
